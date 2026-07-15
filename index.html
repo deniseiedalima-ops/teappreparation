@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEAP — English With Denise</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --cream:#f0ede8; --black:#111; --orange:#ff6a00; --border:#e0dbd4; --green:#0f6e56; --greenbg:#e1f5ee; --red:#c0392b; --redbg:#fbeceb; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--cream); font-family:'DM Sans',sans-serif; color:var(--black); }
+  .screen { display:none; min-height:100vh; }
+  .screen.active { display:block; }
+  .wrap { max-width:760px; margin:0 auto; padding:32px 20px 60px; }
+  h1,h2 { font-family:'DM Serif Display',serif; font-weight:400; margin:0; }
+  button { font-family:'DM Sans',sans-serif; cursor:pointer; }
+
+  /* LOGIN */
+  #screen-login .box { max-width:360px; margin:15vh auto 0; background:#fff; border:0.5px solid var(--border); border-radius:16px; padding:32px 28px; text-align:center; }
+  #screen-login h1 { font-size:26px; margin-bottom:6px; }
+  #screen-login p { font-size:13px; color:#888; margin-bottom:20px; }
+  #screen-login input { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:9px; font-size:14px; font-family:'DM Sans',sans-serif; margin-bottom:12px; }
+  #screen-login button { width:100%; background:var(--black); color:#fff; border:none; border-radius:9px; padding:12px; font-size:14px; font-weight:600; }
+
+  /* MENU */
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+  .topbar .greeting { font-size:13px; color:#888; }
+  .topbar .greeting strong { color:var(--black); }
+  .logout-link { font-size:12px; color:#aaa; background:none; border:none; }
+  .tabs { display:flex; gap:8px; margin-bottom:20px; }
+  .tabs button { flex:1; background:#fff; border:0.5px solid var(--border); border-radius:10px; padding:10px; font-size:13px; font-weight:600; color:#888; }
+  .tabs button.active { background:var(--black); color:#fff; border-color:var(--black); }
+
+  .card { display:flex; justify-content:space-between; align-items:center; background:#fff; border:0.5px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px; cursor:pointer; }
+  .card:hover { background:#faf8f6; }
+  .card.disabled { opacity:.5; cursor:default; }
+  .card-title { font-size:15px; font-weight:600; }
+  .card-sub { font-size:11.5px; color:#aaa; margin-top:2px; }
+  .badge { font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; flex-shrink:0; }
+  .badge-done { background:var(--greenbg); color:var(--green); }
+  .badge-start { background:var(--orange); color:#fff; }
+  .badge-locked { background:#eee; color:#999; }
+
+  .cat-count { font-size:11px; color:#aaa; }
+
+  /* EXAM */
+  #screen-exam .exam-wrap { height:100vh; padding:14px; display:flex; flex-direction:column; }
+  .exam-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .exam-top span { font-size:12px; color:#888; font-weight:600; }
+  .exam-top button { background:none; border:none; color:var(--red); font-size:12px; }
+  .progress { height:4px; background:var(--border); border-radius:4px; overflow:hidden; margin-bottom:12px; }
+  .progress-fill { height:100%; background:var(--orange); transition:width .2s; }
+  .panels { flex:1; display:flex; gap:12px; min-height:0; }
+  .text-panel, .q-panel { background:#fff; border:0.5px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; min-height:0; }
+  .text-panel { flex:1.3; }
+  .q-panel { flex:1; }
+  .text-tabs { display:flex; gap:8px; margin-bottom:10px; }
+  .text-tabs button { border:none; background:var(--cream); color:#888; font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; }
+  .text-tabs button.active { background:var(--black); color:#fff; }
+  .text-body { overflow-y:auto; flex:1; font-size:13.5px; line-height:1.7; }
+  .text-body p { margin:0 0 12px; }
+  .q-body { font-size:15px; font-weight:500; line-height:1.5; margin-bottom:14px; overflow-y:auto; }
+  .alt-list { display:flex; flex-direction:column; gap:8px; overflow-y:auto; margin-bottom:10px; }
+  .alt-btn { display:flex; align-items:center; gap:10px; text-align:left; border:1.5px solid var(--border); background:#fff; color:#444; border-radius:9px; padding:10px 12px; font-size:13px; }
+  .alt-letter { flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--cream); color:#888; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .alt-btn.selected { border-color:var(--orange); background:#fff4ec; }
+  .alt-btn.selected .alt-letter { background:var(--orange); color:#fff; }
+  .exam-nav { margin-top:auto; display:flex; justify-content:space-between; align-items:center; }
+  .exam-nav button { background:none; border:none; font-size:13px; }
+  .exam-nav button:disabled { color:#ddd; }
+  .btn-next { color:var(--orange) !important; font-weight:700; }
+  .btn-finish { background:var(--black); color:#fff !important; border-radius:8px; padding:10px 18px; font-weight:600; }
+
+  /* RESULT */
+  #screen-result .wrap { max-width:560px; }
+  .result-score { background:var(--black); border-radius:14px; padding:24px; text-align:center; margin-bottom:16px; }
+  .result-number { font-family:'DM Serif Display',serif; font-size:38px; color:#fff; }
+  .result-number span { font-size:18px; color:rgba(255,255,255,.4); }
+  .result-note { font-size:12px; color:#4fd6ac; margin-top:4px; }
+  .result-list { background:#fff; border:0.5px solid var(--border); border-radius:12px; padding:8px 16px; }
+  .result-row { display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:0.5px solid #f5f2ee; font-size:12.5px; }
+  .result-row:last-child { border-bottom:none; }
+  .result-q { color:#aaa; flex-shrink:0; width:26px; }
+  .result-txt { flex:1; }
+  .result-ok { color:var(--green); font-weight:600; flex-shrink:0; }
+  .result-bad { color:var(--red); font-weight:600; flex-shrink:0; }
+  .btn-back-panel { display:block; margin:20px auto 0; background:var(--orange); color:#fff; border:none; border-radius:10px; padding:13px 24px; font-size:14px; font-weight:600; }
+
+  /* PRACTICE */
+  .prat-card { background:#fff; border:0.5px solid var(--border); border-radius:14px; padding:18px; }
+  .prat-progress { font-size:11px; color:#aaa; margin-bottom:10px; }
+  .prat-feedback { margin-top:14px; padding:12px 14px; border-radius:10px; }
+  .prat-feedback.ok { background:var(--greenbg); }
+  .prat-feedback.bad { background:var(--redbg); }
+  .prat-feedback-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+  .prat-feedback.ok .prat-feedback-title { color:var(--green); }
+  .prat-feedback.bad .prat-feedback-title { color:var(--red); }
+  .prat-feedback p { font-size:12px; color:#555; line-height:1.5; margin-bottom:10px; }
+  .back-link { background:none; border:none; color:#888; font-size:13px; padding:0; margin-bottom:14px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="screen-login" class="screen active">
+  <div class="box">
+    <h1>TEAP</h1>
+    <p>English With Denise</p>
+    <input id="input-name" type="text" placeholder="Seu nome">
+    <button onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ═══════════ MENU ═══════════ -->
+<div id="screen-menu" class="screen">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="greeting">Olá, <strong id="greet-name"></strong></div>
+      <button class="logout-link" onclick="doLogout()">Trocar de aluno</button>
+    </div>
+    <div class="tabs">
+      <button id="tab-sim" class="active" onclick="showTab('sim')">Simulados</button>
+      <button id="tab-prat" onclick="showTab('prat')">Praticar por tema</button>
+      <button id="tab-dados" onclick="showTab('dados')">Dados</button>
+    </div>
+    <div id="list-sim"></div>
+    <div id="list-prat" style="display:none;"></div>
+    <div id="list-dados" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- ═══════════ EXAME ═══════════ -->
+<div id="screen-exam" class="screen">
+  <div class="exam-wrap">
+    <div class="exam-top">
+      <span id="exam-title"></span>
+      <span id="exam-timer" style="font-family:'DM Sans',sans-serif; font-weight:700; color:var(--black);"></span>
+      <button onclick="exitExam()">Sair</button>
+    </div>
+    <div class="progress"><div class="progress-fill" id="exam-progress-fill"></div></div>
+    <div class="panels">
+      <div class="text-panel">
+        <div class="text-tabs">
+          <button id="btn-texto1" class="active" onclick="setActiveText(1)">Texto 1</button>
+          <button id="btn-texto2" onclick="setActiveText(2)">Texto 2</button>
+        </div>
+        <div class="text-body" id="text-body"></div>
+      </div>
+      <div class="q-panel">
+        <div class="q-body" id="q-body"></div>
+        <div class="alt-list" id="alt-list"></div>
+        <div class="exam-nav">
+          <button id="btn-prev" onclick="goTo(-1)">‹ Anterior</button>
+          <button id="btn-next" class="btn-next" onclick="goTo(1)">Próxima ›</button>
+          <button id="btn-finish" class="btn-finish" style="display:none;" onclick="finalizarSimulado()">Finalizar simulado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ RESULTADO ═══════════ -->
+<div id="screen-result" class="screen">
+  <div class="wrap">
+    <div class="result-score">
+      <div class="result-number"><span id="result-acertos"></span><span id="result-total-suffix"></span></div>
+      <div class="result-note" id="result-note"></div>
+      <div id="result-envio-status" style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:6px;"></div>
+    </div>
+    <div class="result-list" id="result-list"></div>
+    <button class="btn-back-panel" onclick="backToMenu()">Voltar ao painel</button>
+  </div>
+</div>
+
+<!-- ═══════════ PRÁTICA (execução) ═══════════ -->
+<div id="screen-practice" class="screen">
+  <div class="wrap">
+    <button class="back-link" onclick="backToMenu()">← Painel TEAP</button>
+    <h2 id="prat-title" style="font-size:22px; margin-bottom:14px;"></h2>
+    <div id="prat-body"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   CONTEÚDO — edite os arrays abaixo para adicionar simulados e
+   questões de prática. Estrutura:
+
+   SIMULADOS[i] = {
+     id, titulo, texto1, texto2,
+     questoes: [{ numero, enunciado, textoRef: 1|2, categoria,
+                  alternativas: {A,B,C,D,E}, correta: 'A' }]
+   }
+   categoria deve ser uma de: Localização | Referência Pronominal |
+   Vocabulário | Compreensão de Sentença | Compreensão de Parágrafo | Ideia Central
+
+   PRATICA[categoria] = [{ enunciado, alternativas, correta, explicacao }]
+   ══════════════════════════════════════════════════════════════════ */
+
+const EXAM_DURATION_SEC = 90 * 60; // 1h30 — mude aqui se quiser outro tempo
+
+// Endereço do endpoint na Vercel que recebe os resultados e grava no Notion.
+// Troque pelo domínio certo se não for esse.
+const NOTION_ENDPOINT = '/api/index?route=teap-html-submit';
+
+const SIMULADOS = [
+  {
+    id: 1,
+    titulo: 'Simulado 1',
+    texto1: `Cole aqui o Texto 1 completo deste simulado.\nPode ter vários parágrafos — cada quebra de linha vira um parágrafo novo.`,
+    texto2: `Cole aqui o Texto 2 completo deste simulado.`,
+    questoes: [
+      { numero: 1, enunciado: 'De acordo com o parágrafo 2, a conclusão do autor se baseia principalmente em:', textoRef: 1, categoria: 'Ideia Central',
+        alternativas: { A: 'Opiniões de especialistas externos', B: 'Dados apresentados no próprio texto', C: 'Comparações históricas', D: 'Impressões pessoais do autor' },
+        correta: 'B' },
+      { numero: 2, enunciado: "O pronome 'it' na linha 5 se refere a:", textoRef: 1, categoria: 'Referência Pronominal',
+        alternativas: { A: 'O sujeito da frase anterior', B: 'O autor do texto', C: 'Um substantivo mencionado no parágrafo seguinte', D: 'O título do texto' },
+        correta: 'C' },
+    ],
+  },
+  { id: 2, titulo: 'Simulado 2', texto1: '', texto2: '', questoes: [] },
+  { id: 3, titulo: 'Simulado 3', texto1: '', texto2: '', questoes: [] },
+  { id: 4, titulo: 'Simulado 4', texto1: '', texto2: '', questoes: [] },
+  { id: 5, titulo: 'Simulado 5', texto1: '', texto2: '', questoes: [] },
+  { id: 6, titulo: 'Simulado 6', texto1: '', texto2: '', questoes: [] },
+];
+
+const PRATICA = {
+  'Localização': [],
+  'Referência Pronominal': [
+    { enunciado: "Ao identificar a que um pronome como 'it' ou 'they' se refere, a estratégia mais confiável é:",
+      alternativas: { A: 'O primeiro substantivo do texto, sempre', B: 'O título do parágrafo', C: 'O elemento mais próximo, semântica e sintaticamente compatível, mencionado antes', D: 'Sempre o sujeito da primeira frase do texto' },
+      correta: 'C',
+      explicacao: 'Referência pronominal exige concordância de número/gênero E proximidade — nunca assuma que é sempre o primeiro substantivo do texto.' },
+  ],
+  'Vocabulário': [],
+  'Compreensão de Sentença': [],
+  'Compreensão de Parágrafo': [],
+  'Ideia Central': [
+    { enunciado: "Qual alternativa melhor descreve a 'ideia central' (main idea) de um texto?",
+      alternativas: { A: 'A opinião pessoal do autor sobre o tema', B: 'O argumento central que o texto defende do início ao fim', C: 'Um exemplo específico citado no segundo parágrafo', D: 'A definição técnica de um termo usado no texto' },
+      correta: 'B',
+      explicacao: 'Ideia central é sempre o argumento guarda-chuva que organiza todo o texto — não um detalhe ou exemplo específico.' },
+  ],
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   MOTOR — não precisa editar daqui pra baixo
+   ══════════════════════════════════════════════════════════════════ */
+
+let state = { simulado: null, current: 0, respostas: {}, activeText: 1, praticaCategoria: null, praticaIndex: 0, timerInterval: null, timerEnd: null };
+
+function $(id) { return document.getElementById(id); }
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); }
+
+function studentKey() { return localStorage.getItem('teap_name') || ''; }
+function resultKey(simuladoId) { return `teap_result_${studentKey()}_${simuladoId}`; }
+
+function doLogin() {
+  const name = $('input-name').value.trim();
+  if (!name) { alert('Digite seu nome.'); return; }
+  localStorage.setItem('teap_name', name);
+  enterMenu();
+}
+function doLogout() {
+  show('screen-login');
+  $('input-name').value = '';
+}
+function enterMenu() {
+  $('greet-name').textContent = studentKey();
+  renderSimuladosList();
+  renderPraticaList();
+  show('screen-menu');
+}
+window.addEventListener('load', () => { if (studentKey()) enterMenu(); });
+
+function showTab(tab) {
+  $('tab-sim').classList.toggle('active', tab === 'sim');
+  $('tab-prat').classList.toggle('active', tab === 'prat');
+  $('tab-dados').classList.toggle('active', tab === 'dados');
+  $('list-sim').style.display = tab === 'sim' ? 'block' : 'none';
+  $('list-prat').style.display = tab === 'prat' ? 'block' : 'none';
+  $('list-dados').style.display = tab === 'dados' ? 'block' : 'none';
+  if (tab === 'dados') renderDadosList();
+}
+
+/* ── LISTA DE SIMULADOS ── */
+function renderSimuladosList() {
+  const el = $('list-sim');
+  el.innerHTML = '';
+  SIMULADOS.forEach(s => {
+    const saved = JSON.parse(localStorage.getItem(resultKey(s.id)) || 'null');
+    const semQuestoes = s.questoes.length === 0;
+    const div = document.createElement('div');
+    div.className = 'card' + (semQuestoes ? ' disabled' : '');
+    div.innerHTML = `
+      <div>
+        <div class="card-title">${s.titulo}</div>
+        <div class="card-sub">${semQuestoes ? 'Em breve' : '2 textos · ' + s.questoes.length + ' questões'}</div>
+      </div>
+      ${semQuestoes ? '<div class="badge badge-locked">Em breve</div>'
+        : saved ? `<div class="badge badge-done">${saved.nota}%</div>`
+        : '<div class="badge badge-start">Iniciar</div>'}
+    `;
+    if (!semQuestoes) div.onclick = () => startSimulado(s.id);
+    el.appendChild(div);
+  });
+}
+
+/* ── LISTA DE PRÁTICA ── */
+function renderPraticaList() {
+  const el = $('list-prat');
+  el.innerHTML = '';
+  Object.entries(PRATICA).forEach(([categoria, questoes]) => {
+    const div = document.createElement('div');
+    div.className = 'card' + (questoes.length === 0 ? ' disabled' : '');
+    div.innerHTML = `
+      <div>
+        <div class="card-title">${categoria}</div>
+        <div class="card-sub">${questoes.length} questão(ões) disponível(is)</div>
+      </div>
+      <div class="cat-count">›</div>
+    `;
+    if (questoes.length > 0) div.onclick = () => startPratica(categoria);
+    el.appendChild(div);
+  });
+}
+
+/* ── EXAME ── */
+function startSimulado(id) {
+  state.simulado = SIMULADOS.find(s => s.id === id);
+  state.current = 0;
+  state.respostas = {};
+  state.activeText = state.simulado.questoes[0].textoRef;
+  renderExam();
+  startTimer();
+  show('screen-exam');
+}
+function exitExam() { if (confirm('Sair sem salvar suas respostas?')) { stopTimer(); backToMenu(); } }
+
+function startTimer() {
+  stopTimer();
+  state.timerEnd = Date.now() + EXAM_DURATION_SEC * 1000;
+  updateTimerDisplay();
+  state.timerInterval = setInterval(updateTimerDisplay, 1000);
+}
+function stopTimer() {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  state.timerInterval = null;
+}
+function updateTimerDisplay() {
+  const remaining = Math.max(0, Math.round((state.timerEnd - Date.now()) / 1000));
+  const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const s = String(remaining % 60).padStart(2, '0');
+  const el = $('exam-timer');
+  el.textContent = `⏱ ${m}:${s}`;
+  el.style.color = remaining <= 300 ? 'var(--red)' : 'var(--black)';
+  if (remaining <= 0) {
+    stopTimer();
+    alert('Tempo esgotado! Seu simulado será finalizado com as respostas marcadas até agora.');
+    finalizarSimulado();
+  }
+}
+function setActiveText(n) { state.activeText = n; renderExamTexts(); }
+
+function renderExamTexts() {
+  $('btn-texto1').classList.toggle('active', state.activeText === 1);
+  $('btn-texto2').classList.toggle('active', state.activeText === 2);
+  const texto = state.activeText === 1 ? state.simulado.texto1 : state.simulado.texto2;
+  $('text-body').innerHTML = texto.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+}
+
+function renderExam() {
+  const sim = state.simulado;
+  const q = sim.questoes[state.current];
+  $('exam-title').textContent = `${sim.titulo} · Questão ${state.current + 1}/${sim.questoes.length}`;
+  $('exam-progress-fill').style.width = ((state.current + 1) / sim.questoes.length * 100) + '%';
+  state.activeText = q.textoRef;
+  renderExamTexts();
+  $('q-body').textContent = q.enunciado;
+
+  const altEl = $('alt-list');
+  altEl.innerHTML = '';
+  Object.entries(q.alternativas).forEach(([letra, texto]) => {
+    const btn = document.createElement('button');
+    btn.className = 'alt-btn' + (state.respostas[q.numero] === letra ? ' selected' : '');
+    btn.innerHTML = `<span class="alt-letter">${letra}</span><span>${texto}</span>`;
+    btn.onclick = () => { state.respostas[q.numero] = letra; renderExam(); };
+    altEl.appendChild(btn);
+  });
+
+  $('btn-prev').disabled = state.current === 0;
+  const isLast = state.current === sim.questoes.length - 1;
+  $('btn-next').style.display = isLast ? 'none' : 'inline-block';
+  $('btn-finish').style.display = isLast ? 'inline-block' : 'none';
+}
+function goTo(delta) {
+  const next = state.current + delta;
+  if (next < 0 || next >= state.simulado.questoes.length) return;
+  state.current = next;
+  renderExam();
+}
+
+function finalizarSimulado() {
+  stopTimer();
+  const sim = state.simulado;
+  let acertos = 0;
+  const categoriasErradas = {};
+  const gabarito = sim.questoes.map(q => {
+    const dada = state.respostas[q.numero] || null;
+    const correta = dada === q.correta;
+    if (correta) acertos++;
+    else categoriasErradas[q.categoria] = (categoriasErradas[q.categoria] || 0) + 1;
+    return { numero: q.numero, enunciado: q.enunciado, categoria: q.categoria, dada, correta: q.correta, ok: correta };
+  });
+  const total = sim.questoes.length;
+  const nota = Math.round((acertos / total) * 100);
+  localStorage.setItem(resultKey(sim.id), JSON.stringify({
+    nota, acertos, total, data: new Date().toLocaleDateString('pt-BR'), categoriasErradas,
+  }));
+  renderResult(acertos, total, nota, gabarito, categoriasErradas);
+  show('screen-result');
+  enviarParaNotion(sim.titulo, nota, acertos, total, categoriasErradas);
+}
+
+function enviarParaNotion(simuladoTitulo, nota, acertos, total, categoriasErradas) {
+  const statusEl = $('result-envio-status');
+  if (statusEl) statusEl.textContent = 'Enviando resultado...';
+  fetch(NOTION_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ aluno: studentKey(), simulado: simuladoTitulo, nota, acertos, total, categoriasErradas }),
+  })
+    .then(r => r.ok ? Promise.resolve() : Promise.reject())
+    .then(() => { if (statusEl) statusEl.textContent = '✓ Enviado para o Notion'; })
+    .catch(() => { if (statusEl) statusEl.textContent = '⚠ Não foi possível enviar agora (sem internet?). Sua nota já está salva neste computador.'; });
+}
+
+function renderResult(acertos, total, nota, gabarito, categoriasErradas) {
+  $('result-acertos').textContent = acertos;
+  $('result-total-suffix').textContent = '/' + total;
+  $('result-note').textContent = `Nota: ${nota}% — salva no seu computador ✓`;
+
+  const errosEntries = Object.entries(categoriasErradas || {});
+  const resumoEl = document.getElementById('result-resumo-erros');
+  if (resumoEl) resumoEl.remove(); // limpa de uma renderização anterior
+  if (errosEntries.length) {
+    const box = document.createElement('div');
+    box.id = 'result-resumo-erros';
+    box.style.cssText = 'background:#fff; border:0.5px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:12px;';
+    box.innerHTML = `<div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#888; margin-bottom:8px;">Onde você errou</div>` +
+      errosEntries.map(([cat, qtd]) => `
+        <div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12.5px;">
+          <span>${cat}</span><span style="color:var(--red); font-weight:600;">${qtd} erro(s)</span>
+        </div>`).join('');
+    $('result-list').insertAdjacentElement('beforebegin', box);
+  }
+
+  const list = $('result-list');
+  list.innerHTML = gabarito.map(g => `
+    <div class="result-row">
+      <span class="result-q">Q${g.numero}</span>
+      <span class="result-txt">${g.enunciado}</span>
+      <span class="${g.ok ? 'result-ok' : 'result-bad'}">${g.ok ? '✓ ' + (g.dada || '—') : '✗ ' + (g.dada || '—') + ' (certa: ' + g.correta + ')'}</span>
+    </div>
+  `).join('');
+}
+
+/* ── PRÁTICA (execução) ── */
+function startPratica(categoria) {
+  state.praticaCategoria = categoria;
+  state.praticaIndex = 0;
+  $('prat-title').textContent = 'Praticar: ' + categoria;
+  renderPratica();
+  show('screen-practice');
+}
+function renderPratica() {
+  const questoes = PRATICA[state.praticaCategoria];
+  const body = $('prat-body');
+  if (state.praticaIndex >= questoes.length) {
+    body.innerHTML = `
+      <div class="prat-card" style="text-align:center;">
+        <div style="font-size:32px; color:var(--green); margin-bottom:8px;">✓</div>
+        <p style="margin-bottom:16px;">Você praticou todas as ${questoes.length} questões desta categoria.</p>
+        <button class="btn-back-panel" style="margin:0 auto;" onclick="backToMenu()">Voltar ao painel</button>
+      </div>`;
+    return;
+  }
+  const q = questoes[state.praticaIndex];
+  body.innerHTML = `
+    <div class="prat-card">
+      <div class="prat-progress">Questão ${state.praticaIndex + 1} de ${questoes.length}</div>
+      <div class="q-body" style="margin-bottom:14px;">${q.enunciado}</div>
+      <div class="alt-list" id="prat-alts"></div>
+      <div id="prat-feedback"></div>
+    </div>`;
+  const altsEl = $('prat-alts');
+  Object.entries(q.alternativas).forEach(([letra, texto]) => {
+    const btn = document.createElement('button');
+    btn.className = 'alt-btn';
+    btn.innerHTML = `<span class="alt-letter">${letra}</span><span>${texto}</span>`;
+    btn.onclick = () => answerPratica(letra, q);
+    altsEl.appendChild(btn);
+  });
+}
+function answerPratica(letra, q) {
+  document.querySelectorAll('#prat-alts .alt-btn').forEach(b => b.onclick = null);
+  document.querySelectorAll('#prat-alts .alt-btn').forEach(b => {
+    const l = b.querySelector('.alt-letter').textContent;
+    if (l === q.correta) b.classList.add('selected');
+  });
+  const ok = letra === q.correta;
+  $('prat-feedback').innerHTML = `
+    <div class="prat-feedback ${ok ? 'ok' : 'bad'}">
+      <div class="prat-feedback-title">${ok ? '✓ Certa!' : '✗ A certa era ' + q.correta}</div>
+      ${q.explicacao ? '<p>' + q.explicacao + '</p>' : ''}
+      <button class="btn-finish" style="background:var(--black); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:12.5px; font-weight:600;" onclick="nextPratica()">
+        ${state.praticaIndex + 1 < PRATICA[state.praticaCategoria].length ? 'Próxima questão →' : 'Concluir →'}
+      </button>
+    </div>`;
+}
+function nextPratica() { state.praticaIndex++; renderPratica(); }
+
+/* ── LISTA DE DADOS (histórico: data, acertos, onde errou) ── */
+function renderDadosList() {
+  const el = $('list-dados');
+  el.innerHTML = '';
+  const feitos = SIMULADOS
+    .map(s => ({ s, saved: JSON.parse(localStorage.getItem(resultKey(s.id)) || 'null') }))
+    .filter(x => x.saved);
+
+  if (feitos.length === 0) {
+    el.innerHTML = '<p style="font-size:13px; color:#888; text-align:center; padding:20px 0;">Nenhum simulado feito ainda.</p>';
+    return;
+  }
+
+  feitos.forEach(({ s, saved }) => {
+    const erros = Object.entries(saved.categoriasErradas || {});
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.cursor = 'default';
+    div.style.flexDirection = 'column';
+    div.style.alignItems = 'stretch';
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:${erros.length ? '10px' : '0'};">
+        <div>
+          <div class="card-title">${s.titulo}</div>
+          <div class="card-sub">${saved.data} · ${saved.acertos}/${saved.total} acertos</div>
+        </div>
+        <div class="badge badge-done">${saved.nota}%</div>
+      </div>
+      ${erros.length ? `
+        <div style="border-top:0.5px solid var(--border); padding-top:10px;">
+          <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#888; margin-bottom:6px;">Onde errou</div>
+          ${erros.map(([cat, qtd]) => `
+            <div style="display:flex; justify-content:space-between; padding:3px 0; font-size:12px;">
+              <span>${cat}</span><span style="color:var(--red); font-weight:600;">${qtd} erro(s)</span>
+            </div>`).join('')}
+        </div>` : `<div style="border-top:0.5px solid var(--border); padding-top:8px; font-size:12px; color:var(--green);">Nenhum erro — gabaritou! 🎉</div>`}
+    `;
+    el.appendChild(div);
+  });
+}
+
+function backToMenu() { renderSimuladosList(); renderPraticaList(); show('screen-menu'); }
+</script>
+</body>
+</html>
